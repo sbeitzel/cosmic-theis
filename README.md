@@ -2,7 +2,6 @@
 
 
 An updated take on the Theis Playlist Manager.
-
 ##History
 
 [Theis Playlist Manager (TPM) was created by Aaron Forres](http://tpm.sourceforge.net/)t in 2003 for WPRB 103.3 FM, an independent radio station in Princeton, NJ. WPRB uses this software to create archives of its playlists and maintain its schedule.
