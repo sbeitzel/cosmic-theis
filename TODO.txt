@@ -1,0 +1,38 @@
+Theis Playlist Manager TODO:
+
+code cleanup
+caching config option
+
+Customizable general genres (instead of rock/etc, jazz, classical)
+Customizable emph bins
+timestamps on songs??
+text-output custom formatting script
+
+X_upgradeable config files
+X_SSL
+X_"now playing" display on wprb.com/index
+X_undo login/pw char limit
+X_only beginning of comment shows up when you edit track later
+X_ability to add new playlist at later date
+X_Have cols appear dynamically when dj adds a comp or req song
+X_search by "emph plays" is too esoteric
+X_special classical template [requires dynamic field display]
+X_make an offair.php that makes more sense
+X_vals stay in playlist form if there is an error
+X_move adduser entry table above dj list
+X_don't require pw change when changing user infos
+X_get rid of all station references outside of config file
+X_sort searches by any criteria
+X_fix search for classical
+X_add boundary times to search
+X_ability to shift songs multiple lines at once
+X_fix confirmplaylist.php for classical display
+X_find a show by date/time
+X_comments in breaks
+X_window.focus() on popups
+X_if a dj has not set their defgenre, have it set by the schedule manager
+X_give admin ability to change ownership of a playlist
+		or just to su [user]
+X_add playlist view to admin section
+
+$Id: TODO.txt,v 1.27 2004/10/16 03:09:10 admin Exp $

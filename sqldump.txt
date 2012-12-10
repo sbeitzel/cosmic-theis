@@ -1,0 +1,134 @@
+-- MySQL dump 9.10
+--
+-- Host: localhost    Database: wprb_test
+-- ------------------------------------------------------
+-- Server version	4.0.18-log
+
+--
+-- Table structure for table `logins`
+--
+
+CREATE TABLE logins (
+  ID int(11) NOT NULL auto_increment,
+  login varchar(20) default NULL,
+  password varchar(32) default NULL,
+  PRIMARY KEY  (ID)
+) TYPE=MyISAM;
+
+--
+-- Table structure for table `playlist`
+--
+
+CREATE TABLE playlist (
+  ID int(11) NOT NULL auto_increment,
+  showID int(11) NOT NULL default '0',
+  artist varchar(200) default NULL,
+  song varchar(255) default NULL,
+  album varchar(250) default NULL,
+  label varchar(100) default NULL,
+  emph char(2) default NULL,
+  request int(1) default NULL,
+  comp int(1) default NULL,
+  comments blob,
+  ensemble varchar(200) default NULL,
+  conductor varchar(150) default NULL,
+  performer varchar(150) default NULL,
+  orderkey int(11) default NULL,
+  PRIMARY KEY  (ID),
+  KEY orderkey (orderkey),
+  FULLTEXT KEY song (song),
+  FULLTEXT KEY artist (artist),
+  FULLTEXT KEY album (album),
+  FULLTEXT KEY label (label),
+  FULLTEXT KEY searchall (artist,song,album,label,ensemble,conductor,performer),
+  FULLTEXT KEY ensemble (ensemble),
+  FULLTEXT KEY conductor (conductor),
+  FULLTEXT KEY performer (performer)
+) TYPE=MyISAM;
+
+--
+-- Table structure for table `schedule_data`
+--
+
+CREATE TABLE schedule_data (
+  ID int(11) NOT NULL auto_increment,
+  schedulesID int(11) default NULL,
+  userID int(11) default NULL,
+  title varchar(200) default NULL,
+  start int(11) default NULL,
+  end int(11) default NULL,
+  day int(1) default NULL,
+  sequence int(11) default NULL,
+  PRIMARY KEY  (ID)
+) TYPE=MyISAM;
+
+--
+-- Table structure for table `schedules`
+--
+
+CREATE TABLE schedules (
+  ID int(11) NOT NULL auto_increment,
+  season int(1) default NULL,
+  year int(4) default NULL,
+  current int(1) default NULL,
+  PRIMARY KEY  (ID)
+) TYPE=MyISAM;
+
+--
+-- Table structure for table `shows`
+--
+
+CREATE TABLE shows (
+  ID int(11) NOT NULL auto_increment,
+  userID int(11) default NULL,
+  starttime int(14) default NULL,
+  duration float default NULL,
+  djname varchar(50) default NULL,
+  title varchar(200) default NULL,
+  subtitle varchar(250) default NULL,
+  genre varchar(30) default NULL,
+  othergenre varchar(50) default NULL,
+  active int(1) default NULL,
+  lastrenewed int(14) default NULL,
+  PRIMARY KEY  (ID)
+) TYPE=MyISAM;
+
+--
+-- Table structure for table `users`
+--
+
+CREATE TABLE users (
+  ID int(11) NOT NULL auto_increment,
+  loginsID int(11) default NULL,
+  lastname varchar(50) default NULL,
+  firstname varchar(50) default NULL,
+  email varchar(80) default NULL,
+  emailpublish int(11) default NULL,
+  link varchar(100) default NULL,
+  offsite int(1) default NULL,
+  bgcolor varchar(6) default NULL,
+  tablecolor varchar(6) default NULL,
+  textcolor varchar(6) default NULL,
+  tablehead varchar(6) default NULL,
+  tabletext varchar(6) default NULL,
+  defduration decimal(2,1) default NULL,
+  defdjname varchar(50) default NULL,
+  deftitle varchar(150) default NULL,
+  defsubtitle varchar(200) default NULL,
+  defdesc blob,
+  defday int(11) default NULL,
+  defhour int(11) default NULL,
+  defmin int(11) default NULL,
+  defgenre varchar(30) default NULL,
+  defothergenre varchar(50) default NULL,
+  active int(1) default NULL,
+  PRIMARY KEY  (ID)
+) TYPE=MyISAM;
+
+--
+-- set admin pw
+--
+
+INSERT INTO logins 
+  SET login='admin', password='ed80c89a8f7170d3ee9f15b60e10bcaa';
+

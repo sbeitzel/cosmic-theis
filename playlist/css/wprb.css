@@ -1,0 +1,116 @@
+.table_heading 	{ 
+	color: #fc9; 
+	font-weight: bold; 
+	font-size: 11px; 
+	line-height: 12px; 
+	font-family: Verdana, "Trebuchet MS", Arial, Geneva, Helvetica ; 
+	background-color: ff6600; 
+	padding-left: 10px;
+}
+.table_text 	{ 
+	color: #222; 
+	font-weight: normal; 
+	font-size: 11px; 
+	line-height: 12px; 
+	font-family: Verdana, "Trebuchet MS", Arial, Geneva, Helvetica ; 
+	vertical-align: middle; 
+	padding-left: 5px;
+}
+.table_text_inverted 	{ 
+	color: #999; 
+	font-weight: normal; 
+	font-size: 11px; 
+	line-height: 12px; 
+	font-family: Verdana, "Trebuchet MS", Arial, Geneva, Helvetica; 
+}
+.table_text_inverted_bright 	{ 
+	color: #ccc; 
+	font-weight: normal; 
+	font-size: 11px; 
+	line-height: 12px; 
+	font-family: Verdana, "Trebuchet MS", Arial, Geneva, Helvetica; 
+}
+.table_text_alt 	{ 
+	color: #222; 
+	font-weight: normal; 
+	font-size: 11px; 
+	line-height: 12px; 
+	font-family: Verdana, "Trebuchet MS", Arial, Geneva, Helvetica ; 
+	background-color: #FFCC99; 
+	vertical-align: middle; 
+	padding-left: 5px;
+}
+.text { 
+	color: #333; 
+	font-size: 11px; 
+	line-height: 15px; 
+	font-family: Verdana, "Trebuchet MS", Arial, Geneva, Helvetica; 
+}
+a { 
+	color: #669; 
+	font-weight: normal; 
+	font-family: Verdana, "Trebuchet MS", Arial, Geneva, Helvetica; 
+	text-decoration: underline; 
+}
+b 	{ 
+	color: #c30; 
+	font-weight: bold; 
+	font-size: 11px; 
+	line-height: 15px; 
+	font-family: Verdana, "Trebuchet MS", Arial, Geneva, Helvetica; 
+}
+.black 	{ 
+	color: #000; 
+}
+th 	{ 
+	color: #000; 
+	font-weight: bold; 
+	font-size: 12px; 
+	line-height: 15px; 
+	font-family: Verdana, "Trebuchet MS", Arial, Geneva, Helvetica; 
+}
+th.ljust	{ 
+	text-align: left 
+}
+td.mid 	{ 
+	color: #222; 
+	font-weight: normal; 
+	font-size: 11px; 
+	line-height: 12px; 
+	font-family: Verdana, "Trebuchet MS", Arial, Geneva, Helvetica ; 
+	vertical-align: middle; 
+	padding-left: 5px;
+}
+td.norm	{ 
+	color: #222; 
+	font-weight: normal; 
+	font-size: 11px; 
+	line-height: 12px; 
+	font-family: Verdana, "Trebuchet MS", Arial, Geneva, Helvetica ; 
+	vertical-align: top; 
+	padding-left: 5px;
+}
+h2 	{ 
+	color: #000; 
+	font-weight: bold; 
+	font-size: 21px; 
+	font-family: Verdana, "Trebuchet MS", Arial, Geneva, Helvetica; 
+	display: block; 
+}
+h3 	{ 
+	color: #000; 
+	font-weight: bold; 
+	font-size: 14px; 
+	font-family: Verdana, "Trebuchet MS", Arial, Geneva, Helvetica; 
+	display: block; 
+}
+.outline	{
+	border: 1px solid #000000;
+}
+
+.tree	{
+	text-decoration: none;
+	white-space: nowrap;
+	color: #003;
+}
+
