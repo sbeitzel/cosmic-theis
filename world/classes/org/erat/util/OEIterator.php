@@ -1,5 +1,5 @@
 <?php
-// $Id: Iterator.php,v 1.3 2004/01/09 18:10:52 admin Exp $
+// $Id: OEIterator.php,v 1.3 2004/01/09 18:10:52 admin Exp $
 /**********************************************
  **	Mimicks Java-style iterator
  **
@@ -14,14 +14,18 @@
  ** sort($a,$b) - sort objects of type "a" by function "b"
  ***********************************************/
 
-class Iterator {
+/*
+ * TODO I suspect this class is unnecessary once we are using PHP 5. Consider requiring PHP 5 and obsoleting this class. - SWB
+ */
+
+class OEIterator {
 	var $dataArray;
 	var $pointer;
 	
 	/**************************
 	 *	Constructors
 	 **************************/
-	function Iterator($param1 = null) {
+	function OEIterator($param1 = null) {
    		$arg_list = func_get_args();
    		$numargs = sizeof($arg_list);
    		$args = "";
@@ -29,7 +33,7 @@ class Iterator {
      		if ($i != 0) $args .= ", ";
 	    	$args .= "\$param" . ($i + 1);
    		}
-   		eval("\$this->Iterator" . $i . "(" . $args . ");");
+   		eval("\$this->OEIterator" . $i . "(" . $args . ");");
 	}
 	
 	function Iterator0() {
@@ -103,7 +107,7 @@ class Iterator {
 /*
 // test script
 $arr = array("a","b","CCC","zyx");
-$iterator = new Iterator($arr);
+$iterator = new OEIterator($arr);
 $iterator->add("hello");
 $iterator->add("world","next");
 $iterator->reset();
