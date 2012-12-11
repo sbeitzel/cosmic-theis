@@ -7,6 +7,8 @@
  **	generate() - returns a random id
  ***********************************************/
 
+/* TODO Delete this class. It's unused and if we ever do need a UID, let's go ahead and use a standard v4 UUID - SWB */
+
 class UID {
 	var $classCreationTime;
 	var $lastExecutionTime;
