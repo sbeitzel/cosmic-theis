@@ -1,5 +1,5 @@
 <?php
-// $Id: Iterator.php,v 1.3 2004/01/09 18:10:52 admin Exp $
+// $Id: OEIterator.phphp,v 1.3 2004/01/09 18:10:52 admin Exp $
 /**********************************************
  **	Mimicks Java-style iterator
  **
@@ -14,14 +14,14 @@
  ** sort($a,$b) - sort objects of type "a" by function "b"
  ***********************************************/
 
-class Iterator {
+class OEIterator {
 	var $dataArray;
 	var $pointer;
 	
 	/**************************
 	 *	Constructors
 	 **************************/
-	function Iterator($param1 = null) {
+	function OEIterator($param1 = null) {
    		$arg_list = func_get_args();
    		$numargs = sizeof($arg_list);
    		$args = "";
@@ -29,15 +29,15 @@ class Iterator {
      		if ($i != 0) $args .= ", ";
 	    	$args .= "\$param" . ($i + 1);
    		}
-   		eval("\$this->Iterator" . $i . "(" . $args . ");");
+   		eval("\$this->OEIterator" . $i . "(" . $args . ");");
 	}
 	
-	function Iterator0() {
+	function OEIterator0() {
 		$this->dataArray = array();
 		$this->pointer = 0;
 	}
 	
-	function Iterator1(&$param) {
+	function OEIterator1(&$param) {
 		$this->dataArray = $param;
 		$this->pointer = 0;
 	}
@@ -103,7 +103,7 @@ class Iterator {
 /*
 // test script
 $arr = array("a","b","CCC","zyx");
-$iterator = new Iterator($arr);
+$iterator = new OEIterator($arr);
 $iterator->add("hello");
 $iterator->add("world","next");
 $iterator->reset();

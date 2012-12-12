@@ -36,12 +36,12 @@ class OEIterator {
    		eval("\$this->OEIterator" . $i . "(" . $args . ");");
 	}
 	
-	function Iterator0() {
+	function OEIterator0() {
 		$this->dataArray = array();
 		$this->pointer = 0;
 	}
 	
-	function Iterator1(&$param) {
+	function OEIterator1(&$param) {
 		$this->dataArray = $param;
 		$this->pointer = 0;
 	}

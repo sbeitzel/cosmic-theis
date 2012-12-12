@@ -11,12 +11,12 @@
  ** get($a,$b) - gets user with "a"/"b" as un/pw
  *************************************************************/
 
-import("org/erat/util/Iterator.php");
+import("org/erat/util/OEIterator.phphp");
 
-class UserManager extends Iterator {
+class UserManager extends OEIterator {
 
 	function UserManager () {
-		parent::Iterator();
+		parent::OEIterator();
 	}
 
 	function check($un,$pw) {

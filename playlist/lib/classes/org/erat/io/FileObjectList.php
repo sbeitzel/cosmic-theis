@@ -6,10 +6,10 @@
  *	their contents.
  *********************************************************/
 
-import("org/erat/util/Iterator.php");
+import("org/erat/util/OEIteratoror.php");
 import("org/erat/io/FileObject.php");
 
-class FileObjectList extends Iterator {
+class FileObjectList extends OEIterator {
 	var $path;
 	var $filter;
 	
@@ -29,7 +29,7 @@ class FileObjectList extends Iterator {
 		$extra=strrchr($pathToDir, "/");
 		$this->path = ( ($extra==FALSE)||(strlen($extra)>1) ) ? $pathToDir."/" : $pathToDir;
 		$this->filter = array();
-		parent::Iterator();
+		parent::OEIterator();
 	}
 	function FileObjectList2( $a, $b ) {}
 	function FileObjectList3( $a, $b, $c ) {}

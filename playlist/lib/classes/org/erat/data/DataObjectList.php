@@ -14,10 +14,10 @@
  *
  ****************************************************************************/
 
-import("org/erat/util/Iterator.php");
+import("org/erat/util/OEIteratoror.php");
 import("org/erat/data/DataObject.php");
 
-class DataObjectList extends Iterator {
+class DataObjectList extends OEIterator {
 
 	var $qName;
 	var $items;
@@ -43,13 +43,13 @@ class DataObjectList extends Iterator {
 	function DataObjectList2( $query_name, &$db ) {
 		$this->qName=$query_name;
 		$this->databaseToUse = $db;
-		parent::Iterator();
+		parent::OEIterator();
 	}
 
 	function DataObjectList3( $query_name, &$db, $arr ) {
 		$this->qName=$query_name;
 		$this->databaseToUse = $db;
-		parent::Iterator();
+		parent::OEIterator();
 		//$this->printQuery($arr);
 		$this->load($arr);
 	}

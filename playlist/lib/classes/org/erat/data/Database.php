@@ -93,7 +93,7 @@ class Database {
 
 /*
 // testing... an example subclass with script below
-include("../util/Iterator.php");
+include("../util/OEIterator.phphp");
 include("DataObjectList.php");
 include("DataObject.php");
 class EratDB extends Database {
