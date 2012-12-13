@@ -26,8 +26,10 @@ include("lib/dblib.inc.php");
 include("lib/usrlib.inc.php");
 
 // redirect to secure connection
-if (! isset($_SERVER['HTTPS']))	{
-	header("Location: ".__ROOT__."login.php");
+if (!__DEVELOPMENT__) {
+    if (! isset($_SERVER['HTTPS']))	{
+        header("Location: ".__ROOT__."login.php");
+    }
 }
 
 $message="";
@@ -78,23 +80,17 @@ if ( $message != "" )
 	print "<p><b>$message</b></p>";
 	}
 ?>
-<p>
-<form action="<?= $PHP_SELF ?>" method="POST">
+<form action="<?= $_SERVER['PHP_SELF'] ?>" method="POST">
 <input type="hidden" name="action" value="login">
 <input type="hidden" name="<?= session_name() ?>" value="<?= session_id()?>">
-</p>
 <p class='text'>
 Login: <br>
-<input type="text" name="login" value="<?= $login ?>">
-</p><p class='text'>
+<input type="text" name="login" value="<?= $login ?>"><br>
 Password: <br>
-<input type="password" name="password" value="">
-</p><p>
+<input type="password" name="password" value=""><br>
 <input type="submit" value="Login">
 </form>
 </td></tr>
- </tr>
-</table>
 </td></tr></table>
 </body>
 </html>

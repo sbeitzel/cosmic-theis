@@ -14,7 +14,7 @@
  *
  ****************************************************************************/
 
-import("org/erat/util/OEIteratoror.php");
+import("org/erat/util/OEIterator.php");
 import("org/erat/data/DataObject.php");
 
 class DataObjectList extends OEIterator {
