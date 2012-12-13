@@ -26,10 +26,8 @@ include("lib/dblib.inc.php");
 include("lib/usrlib.inc.php");
 
 // redirect to secure connection
-if (!__DEVELOPMENT__) {
-    if (! isset($_SERVER['HTTPS']))	{
-        header("Location: ".__ROOT__."login.php");
-    }
+if (! isset($_SERVER['HTTPS']))	{
+    header("Location: ".__ROOT__."login.php");
 }
 
 $message="";
