@@ -37,7 +37,7 @@ if ( isset($action) && $action == 'send' )	{
 }
 
 
-$usrinfo = getRow('users','loginsID',$session[id]);
+$usrinfo = getRow('users','loginsID',$session[id], 'i');
 if (empty($usrinfo))	{
 	$usrinfo[firstname] = "Anonymous";
 	$usrinfo[email] = "playlist@wprb.com";

@@ -29,7 +29,7 @@ checkUser();
 checkGuestUser();
 
 // verify that user matches selected show
-$show = getRow( "shows", "ID", $_GET[show_id] );
+$show = getRow( "shows", "ID", $_GET[show_id], 'i' );
 if ($show[userID] != ($user = fetchUserID()) )
 	header("Location: oldplaylists.php");
 

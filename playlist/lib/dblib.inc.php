@@ -47,38 +47,50 @@ function connectMysqli() {
 // function to get a row of table values according
 // to input criteria
 
-function getRow( $table, $fnm, $fval )
-	{
-	global $link;
-	$result = mysql_query( "SELECT * FROM $table WHERE $fnm='$fval'", $link);
-	if ( ! $result )
-		die ("getRow fatal error: ".mysql_error() );
-	return mysql_fetch_array( $result );
-	}
+function getRow( $table, $fnm, $fval, $typestr ) {
+	global $dbLink;
+	$query = "SELECT * FROM $table WHERE $fnm=?";
+    $stmt = $dbLink->prepare($query);
+    $stmt->bind_param($typestr, $fval);
+    $stmt->execute() || dieFromSQLError($query, $stmt->errno, $stmt->error);
+
+	$result = $stmt->get_result();
+	return $result->fetch_array();
+}
 
 
 // function to get previous row of table values according
 // to input criteria
 
-function getPrevRow( $table, $fnm, $fval, $fnm2=null, $fval2=null )
-	{
-	global $link;
+function getPrevRow( $table, $fnm, $fval, $fnm2=null, $fval2=null, $typestr ) {
+	global $dbLink;
 	// first get the ID of the previous row
-	$query0 = "SELECT MAX($fnm) FROM $table WHERE $fnm < $fval";
-	if ($fnm2 && $fval2)
-		$query0 .= " AND $fnm2 = $fval2";
-	$result0 = mysql_query($query0, $link);
-	if (! $result0)
-		die( "getPrevRow() result0 fatal error: ".mysql_error() );
-	$prev_array = mysql_fetch_array( $result0 );
+	$query0 = "SELECT MAX($fnm) FROM $table WHERE $fnm < ?";
+    $secondCriterion = $fnm2 && $fval2;
+	if ($secondCriterion) {
+        $query0 .= " AND $fnm2 = ?";
+    }
+
+    $stmt = $dbLink->prepare($query0);
+    if ($secondCriterion) {
+        $stmt->bind_param($typestr, $fval, $fval2);
+    } else {
+        $stmt->bind_param($typestr, $fval);
+    }
+    $stmt->execute() || dieFromSQLError("getPrevRow() ".$query0, $stmt->errno, $stmt->error);
+    $result0 = $stmt->get_result();
+	$prev_array = $result0->fetch_array();
 	$prev_id = $prev_array[0];
+
 	// now get all values from that row
-	$query = "SELECT * FROM $table WHERE $fnm = '$prev_id'";
-	$result = mysql_query( $query, $link );
-	if ( ! $result )
-		die( "getPrevRow() fatal error: ".mysql_error() );
-	return mysql_fetch_array( $result );
-	}
+	$query = "SELECT * FROM $table WHERE $fnm = ?";
+    $stmt = $dbLink->prepare($query);
+    $stmt->bind_param('i', $prev_id);
+    $stmt->execute() || dieFromSQLError("getPrevRow() ".$query, $stmt->errno, $stmt->error);
+
+	$result = $stmt->get_result();
+	return $result->fetch_array();
+}
 
 function getNextRow( $table, $fnm, $fval, $fnm2=null, $fval2=null )
 	{
@@ -275,14 +287,14 @@ function setShowDetails($id=null)
 	{
 	global $session;
 	if (! $id)	{
-		$def = getRow("users", "loginsID", $session[id]);
+		$def = getRow("users", "loginsID", $session[id], 'i');
 		$vals = array("djname"=>$def[defdjname], "title"=>$def[deftitle],
 				"subt"=>$def[defsubtitle], "genre"=>$def[defgenre],
 				"othgenre"=>$def[defothergenre], "start"=>time(),
 				"duration"=>2);
 	}
 	else	{
-		$def = getRow("shows", "ID", $id);
+		$def = getRow("shows", "ID", $id, 'i');
 		$vals = array("djname"=>$def[djname], "title"=>$def[title],
 				"subt"=>$def[subtitle], "genre"=>$def[genre],
 				"othgenre"=>$def[othergenre], "start"=>$def[starttime],
@@ -378,7 +390,7 @@ function newShow($users_id, $starttime, $duration, $djname, $title,
 function defaultShow($id)
 	{
 	global $link;
-	$defaults = getRow("users", "loginsID", $id);
+	$defaults = getRow("users", "loginsID", $id, 'i');
 	if (empty($defaults[othergenre]))
 		$defaults[othergenre] = $defaults[genre];
 	if (empty($defaults[defdjname]))
@@ -558,8 +570,8 @@ function updateDetails($showID, $starttime, $dur, $djname, $title, $subt,
 function shiftUp($id)
 	{
 	global $link;
-	$row = getRow("playlist", "ID", $id);
-	$prev_row = getPrevRow("playlist", "ID", $id, "showID", $row[showID]);
+	$row = getRow("playlist", "ID", $id, 'i');
+	$prev_row = getPrevRow("playlist", "ID", $id, "showID", $row[showID], 'ii');
 	// check if there even _is_ a previous row
 	if ( empty($prev_row))	{
 		$message = "Already at the top<br>\n";
@@ -592,7 +604,7 @@ function shiftUp($id)
 function shiftDown($id)
 	{
 	global $link;
-	$row = getRow("playlist", "ID", $id);
+	$row = getRow("playlist", "ID", $id, 'i');
 	$next_row = getNextRow("playlist", "ID", $id, "showID", $row[showID]);
 	// check if there even _is_ a next row
 	if ( empty($next_row) )	{
@@ -629,8 +641,8 @@ function writeShowInfo($id)
 	global $link;
 	global $session;
 	// first get the info from the database
-	$showinfo = getRow("shows", "ID", $id);
-	$userinfo = getRow("users", "loginsID", $session[id]);
+	$showinfo = getRow("shows", "ID", $id, 'i');
+	$userinfo = getRow("users", "loginsID", $session[id], 'i');
 	(! empty($showinfo[title])) ? print "<h2>$showinfo[title]</h2><h3>$showinfo[subtitle]</h3>\n" : 
 		print "<h2>$showinfo[genre]</h2>";
 	print "<h3> with $showinfo[djname]</h3>\n";

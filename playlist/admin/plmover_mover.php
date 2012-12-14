@@ -33,17 +33,17 @@ checkAdminUser ();
 
 
 
-$playlist = new Playlist ($_GET[show_id]);
+$playlist = new Playlist ($_GET['show_id']);
 $playlist->getPlaylistInfo ();
 $playlistinfo = $playlist->info;
 
-if (isset($_GET[flag]) && $_GET[flag]=="go")	{
-	if (isset ($_GET[action]) && $_GET[action]=="Delete")	{
+if (isset($_GET['flag']) && $_GET['flag']=="go")	{
+	if (isset ($_GET['action']) && $_GET['action']=="Delete")	{
 		$playlist->delete();
 		exit;
 	}
-	if (isset ($_GET[action]) && $_GET[action]=="Transfer")	{
-		$playlist->changeOwner ($_GET[operand]);
+	if (isset ($_GET['action']) && $_GET['action']=="Transfer")	{
+		$playlist->changeOwner ($_GET['operand']);
 	}
 }
 
@@ -57,14 +57,11 @@ $date = date('l, F j, Y, H:i', $playlistinfo->starttime);
 <link href="../css/wprb.css" rel="stylesheet" type="text/css">
 
 <script language="Javascript">
-<!-- start hiding script
 function deleteWarning ()	{
 	if (document.mover_form.action.value == "Delete")	{
 		return window.confirm ("Delete this playlist?");
 	}
 }
-
-// stop hiding -->
 </script>
 </head>
 <body>
@@ -119,21 +116,21 @@ while ($playlist->hasNext())	{
 </table>
 <?php
 $user = new User ($playlistinfo->userID);
-$loginsrow = getRow ("logins", "ID", $user->loginsID);
+$loginsrow = getRow ("logins", "ID", $user->loginsID, 'i');
 ?>
 <b>Current owner is <?= $loginsrow[1] ?></b>
-<p />
+<p></p>
 
 <table class="outline" bgcolor="#ddddee" cellpadding="3">
  <tr>
   <td>
 	<form name="mover_form" method="GET" onSubmit="return deleteWarning();">
 	<input type="hidden" name="flag" value="go" />
-	<input type="hidden" name="show_id" value="<?= $_GET[show_id] ?>" />
+	<input type="hidden" name="show_id" value="<?= $_GET['show_id'] ?>" />
 	<select name="action">
-		<option />Action...
-		<option />Transfer
-		<option />Delete
+		<option>Action...</option>
+		<option>Transfer</option>
+		<option>Delete</option>
 	</select>
 	&nbsp;<b class="black">TO</b>&nbsp;
 	<select name="operand">

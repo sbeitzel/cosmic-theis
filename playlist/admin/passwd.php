@@ -32,7 +32,7 @@ if ( isset($_POST[action]) && $_POST[action] == "change" )	{
 	if ( empty($_POST[oldpw]) || empty($_POST[newpw1]) 
 					|| empty($_POST[newpw2]) )
 		$message .= "Please fill out form completely<br>\n";
-	$l_row = getRow("logins", "login", "admin");
+	$l_row = getRow("logins", "login", "admin", 's');
 	if ( $l_row[password] != md5($_POST[oldpw]) )
 		$message .= "Old password did not match<br>\n";
 	if ($_POST[newpw1] != $_POST[newpw2])

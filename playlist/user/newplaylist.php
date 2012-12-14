@@ -54,7 +54,7 @@ function chooseShow()
 if (isset($action) && $action == "choose")	{
 	if ($yesno == "yes")	{
 		$message = "";
-		$usersrow = getRow("users", "loginsID", "$session[id]");
+		$usersrow = getRow("users", "loginsID", "$session[id]", 'i');
 		if ( $usersrow[defday]=="" || $usersrow[defhour]==""
 			|| $usersrow[defmin]=="" ||
 			$usersrow[defduration]=="" ||

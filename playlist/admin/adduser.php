@@ -40,7 +40,7 @@ if ( isset( $action ) && $action == "adduser" )
 		$message .= "Please enter a password between 1 and 20 characters long<br>\n";
 	if ( $form[password1] != $form[password2] )
 		$message .= "Your passwords did not match<br>\n";
-	if ( getRow( "logins", "login", $form[username] ))
+	if ( getRow( "logins", "login", $form[username], 's' ))
 		$message .= "Login \"$form[username]\" already exists.  Try another<br>\n";
 
 	if ( $message == "" ) // no errors	

@@ -71,7 +71,7 @@ if ($message != "")
 	print "<b>$message</b><br>\n";
 	
 if ( ! empty($id) )	{
-	$row = getRow("playlist", "ID", $id);
+	$row = getRow("playlist", "ID", $id, 'i');
 }
 // determine the height of the comments textarea
 $height = ((strlen($line->comments)>20) ? intval(strlen($line->comments)/20) : 1);

@@ -36,7 +36,7 @@ if ( isset($action) && $action == "edit")
 		empty( $form[email]) )
 		$message .= "Please fill out the form completely<br>\n";
 	
-	if ( getRow("logins", "login", $form[username]) 
+	if ( getRow("logins", "login", $form[username], 's')
 				&& $form[username] != $form[currlogin] )
 		$message .= "Login \"$form[username]\" already exists.  Try again<br>\n";
 	if ( ! empty($_POST[form][password1]) )

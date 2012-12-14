@@ -30,62 +30,61 @@ import("org/wprb/Search.php");
 
 checkAdminUser();
 
-if (! isset($form[startmon]) || ! isset($form[endmon]))	{
+if (! isset($form['startmon']) || ! isset($form['endmon']))	{
 	$zerotime = getdate(0);
 	$nowtime = getdate();
-	$form[startmon] = 1;
-	$form[startmday] = 1;
-	$form[startyear] = 2003; // year playlist db was implemented
-	$form[endmon] = $nowtime[mon];
-	$form[endmday] = $nowtime[mday];
-	$form[endyear] = $nowtime[year];
-	$form[endhour] = $nowtime[hours];
-	$form[endmin] = $nowtime[minutes];
+	$form['startmon'] = 1;
+	$form['startmday'] = 1;
+	$form['startyear'] = 2003; // year playlist db was implemented
+	$form['endmon'] = $nowtime['mon'];
+	$form['endmday'] = $nowtime['mday'];
+	$form['endyear'] = $nowtime['year'];
+	$form['endhour'] = $nowtime['hours'];
+	$form['endmin'] = $nowtime['minutes'];
 }
 
 $message = "";
 // send query to db after form has been submitted
-if (isset($form[action]) && $form[action] == "search")	{
-	if ( strlen($form[searchstring]) < 3 )
+if (isset($form['action']) && $form['action'] == "search")	{
+	if ( strlen($form['searchstring']) < 3 )
 		$message .= "Your search string must be at least 3 characters long";
 	if ($message == "")	{
-		$starttime = mktime($form[starthour],$form[startmin],0, $form[startmon], 
-							$form[startmday], $form[startyear]);
-		$endtime = mktime($form[endhour], $form[endmin], 59, $form[endmon], 
-							$form[endmday], $form[endyear]);
+		$starttime = mktime($form['starthour'],$form['startmin'],0, $form['startmon'],
+							$form['startmday'], $form['startyear']);
+		$endtime = mktime($form['endhour'], $form['endmin'], 59, $form['endmon'],
+							$form['endmday'], $form['endyear']);
 		
-		if ( ! isset( $_GET[orderby] ) )	{
-			$_GET[orderby] = "ID";
-			$_GET[dirx] = "DESC";
+		if ( ! isset( $_GET['orderby'] ) )	{
+			$_GET['orderby'] = "ID";
+			$_GET['dirx'] = "DESC";
 		}
 		
-		$search = new Search( array("searchstring"=>$form[searchstring], 
-							"searchfield"=>$form[searchfield], 
+		$search = new Search( array("searchstring"=>$form['searchstring'],
+							"searchfield"=>$form['searchfield'],
 							"start"=>$starttime, 
 							"end"=>$endtime, 
-							"users"=>$_GET[form][users], 
-							"genres"=>$form[genres],
-							"emphs"=>$_GET[form][emph], 
-							"comp"=>$form[comp], 
-							"req"=>$form[req], 
-							"fuzzy"=>$form[fuzzy],
-							"orderby"=>$_GET[orderby],
-							"dirx"=>$_GET[dirx],
+							"users"=>$_GET['form']['users'],
+							"genres"=>$form['genres'],
+							"emphs"=>$_GET['form']['emph'],
+							"comp"=>$form['comp'],
+							"req"=>$form['req'],
+							"fuzzy"=>$form['fuzzy'],
+							"orderby"=>$_GET['orderby'],
+							"dirx"=>$_GET['dirx'],
 							"page"=>$page));
 		$success = $search->searchDB();
 	}
 }
 	
 // email a user's playlist:
-if (isset($form[action]) && $form[action]=="send")	{
-	$show_array = getRow('shows', 'ID', $show_id);
-	if ( empty($show_array[title]) )
-		$show_array[title] = "$show_array[genre] with $show_array[djname]";
-	$date = getdate($show_array[starttime]);
+if (isset($form['action']) && $form['action']=="send")	{
+	$show_array = getRow('shows', 'ID', $show_id, 'i');
+	if ( empty($show_array['title']) )
+		$show_array['title'] = "$show_array[genre] with $show_array[djname]";
+	$date = getdate($show_array['starttime']);
 	$subject = "$show_array[title] | ".date("l, d M Y, H E\S\T", $date);
-	mailQueryResults($form[email], $subject, $emailquery, null, null, 
-			$show_array[genre], $form[from], $form[comments]);
-//	header("Location: dbsearch.php?listshow=1&show_id=$show_id");
+	mailQueryResults($form['email'], $subject, $emailquery, null, null,
+			$show_array['genre'], $form['from'], $form['comments']);
 }
 	
 ?>
@@ -168,45 +167,45 @@ if ($success)	{
 <input type="hidden" name="page" value="0">
 <table border="0" noshade cellpadding="3">
 	<tr>
-		<th class='ljust' bgcolor="#CCCCCC">Search by:</td>
-		<th class='ljust' bgcolor="#CCCCCC">Search string:</td>
-		<th class='ljust' colspan="2" bgcolor="#CCCCCC">Boundary dates:</td>
-		<th bgcolor="#CCCCCC">&nbsp;</td>
+		<th class='ljust' bgcolor="#CCCCCC">Search by:</th>
+		<th class='ljust' bgcolor="#CCCCCC">Search string:</th>
+		<th class='ljust' colspan="2" bgcolor="#CCCCCC">Boundary dates:</th>
+		<th bgcolor="#CCCCCC">&nbsp;</th>
 	</tr>
 	<tr>
 		<td bgcolor="#EEEEEE"><select name="form[searchfield]">
-			<?php writeSearchOptions($form[searchfield]); ?>
+			<?php writeSearchOptions($form['searchfield']); ?>
 			</select>
 		</td><td bgcolor="#EEEEEE">
-			<input type="text" name="form[searchstring]" value="<?= $form[searchstring] ?>">
+			<input type="text" name="form[searchstring]" value="<?= $form['searchstring'] ?>">
 		<td class='mid' bgcolor="#EEEEEE">From: 
 			<select name="form[startmon]">
-				<?php writeMonthOptions($form[startmon]); ?></select>&nbsp;/&nbsp;
+				<?php writeMonthOptions($form['startmon']); ?></select>&nbsp;/&nbsp;
 			<select name="form[startmday]">
-				<?php writeDayOptions($form[startmday]); ?></select>&nbsp;/&nbsp;
+				<?php writeDayOptions($form['startmday']); ?></select>&nbsp;/&nbsp;
 			<select name="form[startyear]">
-				<?php writeYearOptions2($form[startyear], $form[startyear]-2003, 1); ?></select>&nbsp;&nbsp;
+				<?php writeYearOptions2($form['startyear'], $form['startyear']-2003, 1); ?></select>&nbsp;&nbsp;
 			<div align="right">
 			<select name="form[starthour]">
-				<?php writeHourOptions($form[starthour]);
+				<?php writeHourOptions($form['starthour']);
 				?></select>&nbsp;:&nbsp;
 			<select name="form[startmin]">
-				<?php writeMinuteOptions($form[startmin]);
+				<?php writeMinuteOptions($form['startmin']);
 				?></select>
 			&nbsp;&nbsp;</div>
 		</td><td class='mid' bgcolor="#EEEEEE">To:
 			<select name="form[endmon]">
-				<?php writeMonthOptions($form[endmon]); ?></select>&nbsp;/&nbsp;
+				<?php writeMonthOptions($form['endmon']); ?></select>&nbsp;/&nbsp;
 			<select name="form[endmday]">
-				<?php writeDayOptions($form[endmday]); ?></select>&nbsp;/&nbsp;
+				<?php writeDayOptions($form['endmday']); ?></select>&nbsp;/&nbsp;
 			<select name="form[endyear]">
-				<?php writeYearOptions2($form[endyear], $form[endyear]-2003, 1); ?></select>&nbsp;&nbsp;
+				<?php writeYearOptions2($form['endyear'], $form['endyear']-2003, 1); ?></select>&nbsp;&nbsp;
 			<div align="right">
 			<select name="form[endhour]">
-				<?php writeHourOptions($form[endhour]);
+				<?php writeHourOptions($form['endhour']);
 				?></select>&nbsp;:&nbsp;
 			<select name="form[endmin]">
-				<?php writeMinuteOptions($form[endmin]);
+				<?php writeMinuteOptions($form['endmin']);
 				?></select>
 			&nbsp;&nbsp;</div>
 		</td>
@@ -217,9 +216,9 @@ if ($success)	{
 <!-- SEARCH TYPE -->
 <div class='text'>Search type: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Strict <input type="radio" name="form[fuzzy]" value="0" 
-		<?=(! $_GET[form][fuzzy])?"checked":"";?>>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+		<?=(! $_GET['form']['fuzzy'])?"checked":"";?>>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Fuzzy <input type="radio" name="form[fuzzy]" value="indeed"
-		<?=($_GET[form][fuzzy])?"checked":"";?>>
+		<?=($_GET['form']['fuzzy'])?"checked":"";?>>
 </div>
 
 <!-- SEARCH REFINERS -->
@@ -227,33 +226,33 @@ Fuzzy <input type="radio" name="form[fuzzy]" value="indeed"
 	<tr height="50" valign="bottom">
 		<td colspan="6"><b class='black'>Refine your search:</b></td>
 	</tr><tr>
-		<th class='ljust' bgcolor="#CCCCCC">username(s)</td>
-		<th class='ljust' bgcolor="#CCCCCC">genre</td>
-		<th class='ljust' bgcolor="#CCCCCC">emph plays</td>
-		<th class='ljust' bgcolor="#CCCCCC">compilation</td>
-		<th class='ljust' bgcolor="#CCCCCC">request</td>
+		<th class='ljust' bgcolor="#CCCCCC">username(s)</th>
+		<th class='ljust' bgcolor="#CCCCCC">genre</th>
+		<th class='ljust' bgcolor="#CCCCCC">emph plays</th>
+		<th class='ljust' bgcolor="#CCCCCC">compilation</th>
+		<th class='ljust' bgcolor="#CCCCCC">request</th>
 	</tr><tr valign="top">
 		<td class='norm' bgcolor="#EEEEEE"><select multiple size='5' name="form[users][]">
 			<option value=''>all
-			<?php writeUsernameOptions($_GET[form][users][0]); ?></select></td>
+			<?php writeUsernameOptions($_GET['form']['users'][0]); ?></select></td>
 		<td class='norm' bgcolor="#EEEEEE"><select multiple name="form[genres][]">
 			<option value=''>all
-			<?php writeGenreOptions($_GET[form][genres][0]); ?></select></td>
+			<?php writeGenreOptions($_GET['form']['genres'][0]); ?></select></td>
 		<td class='norm' bgcolor="#EEEEEE"><select multiple name="form[emph][]">
 				<option value=''>none
 				<?php
 				$arr = array("NE", "N", "OE");
 				foreach ($arr as $i)	{
 					print "\t<option ";
-					print (($_GET[form][emph][0]==$i)?"selected":"");
+					print (($_GET['form']['emph'][0]==$i)?"selected":"");
 					print ">$i\n";
 				}
 				?>
 				</select></td>
 		<td class='norm' bgcolor="#EEEEEE">
-			<input name="form[comp]" type="checkbox" value="checked" <?=($_GET[form][comp])?"checked":"";?>></td>
+			<input name="form[comp]" type="checkbox" value="checked" <?=($_GET['form']['comp'])?"checked":"";?>></td>
 		<td class='norm' bgcolor="#EEEEEE">
-			<input name="form[req]" type="checkbox" value="checked" <?=($_GET[form][req])?"checked":"";?>></td>
+			<input name="form[req]" type="checkbox" value="checked" <?=($_GET['form']['req'])?"checked":"";?>></td>
 	</tr>
 </table>
 </form>

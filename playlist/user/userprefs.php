@@ -77,7 +77,7 @@ if ($message != "")
 	print "<b>$message</b><br>\n";
 	
 // get dj preferences from database
-$dj_prefs = getRow("users", "loginsID", $session[id]);
+$dj_prefs = getRow("users", "loginsID", $session[id], 'i');
 ?>
 
 <h2>Edit user preferences for <?= $dj_prefs[firstname]." ".$dj_prefs[lastname] ?></h2>

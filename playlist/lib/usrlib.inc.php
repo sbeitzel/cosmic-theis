@@ -64,7 +64,7 @@ function checkAdminUser()
 	{
 	global $session, $logged_in;
 	$session[logged_in] = false;
-	$logins_row = getRow( "logins", "id", $session[id] );
+	$logins_row = getRow( "logins", "id", $session[id], 'i' );
 	if ( ! $logins_row || $logins_row[login] != $session[login] || $logins_row[password] != $session[password] || $logins_row[login] != "admin" )
 		{
 		header( "Location: ../login.php" );
@@ -81,8 +81,8 @@ function checkUser()
 	{
 	global $session, $logged_in;
 	$session[logged_in] = false;
-	$logins_row = getRow( "logins", "ID", $session[id] );
-	$users_row = getRow( "users", "loginsID", $session[id] );
+	$logins_row = getRow( "logins", "ID", $session[id], 'i' );
+	$users_row = getRow( "users", "loginsID", $session[id], 'i' );
 	if ( ! $logins_row || $logins_row[login] != $session[login] || $logins_row[password] != $session[password] 
 		|| $session[login] == "admin" || $users_row[active]!=1)
 		{

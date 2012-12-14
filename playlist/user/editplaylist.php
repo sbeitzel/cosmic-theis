@@ -32,7 +32,7 @@ checkUser();
 checkGuestUser();
 
 // check that the right person is editing this show
-$showrow = getRow("shows", "ID", $show_id);
+$showrow = getRow("shows", "ID", $show_id, 'i');
 if ($showrow[userID] != fetchUserID())
 	header( "Location: oldplaylists.php" );
 
