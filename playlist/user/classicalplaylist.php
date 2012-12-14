@@ -60,7 +60,7 @@ if ( isset($submitLine) || (isset($def_action) && $def_action == "newline" &&
 
 // write a set break line
 if ( isset($break))
-	writePlaylistLine($show_id, "*****", "BREAK", "*****", "","","","","");
+    writePlaylistLine($show_id, "*****", "BREAK", "*****", "","","","","");
 
 // manipulate line
 if (isset($manipulate) && isset($_POST[flag]))	{

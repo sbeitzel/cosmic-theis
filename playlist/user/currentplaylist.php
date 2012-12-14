@@ -53,7 +53,7 @@ if ( isset($submitLine) || (isset($def_action) && $def_action == "newline" &&
 		$message .= "You must fill in an album title. For albums with no title type \"s/t\".<br>\n";
 	if ($message == "") // no errors
 		{
-		writePlaylistLine($_POST[show_id], $_POST[artist], $_POST[song],
+            writePlaylistLine($_POST[show_id], $_POST[artist], $_POST[song],
 					$_POST[album], $_POST[label], $_POST[comments],
 					$_POST[emph], $_POST[request], $_POST[comp]);
 		}

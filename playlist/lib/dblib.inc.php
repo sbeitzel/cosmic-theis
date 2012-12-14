@@ -34,6 +34,15 @@ function connectToDB()
 		or die ("Couldn't open ultramo_wprb: ".mysql_error() );
 	}
 
+$dbLink = connectMysqli();
+
+function connectMysqli() {
+    $dbLink = new mysqli(__DBHOST__, __DBUSER__, __DBPASSWORD__, __DBNAME__);
+    if ($dbLink->connect_errno) {
+        die("Couldn't connect to MySQL using mysqli: ".$dbLink->connect_errno.": ".$dbLink->connect_error);
+    }
+    return $dbLink;
+}
 
 // function to get a row of table values according
 // to input criteria
@@ -422,18 +431,19 @@ function nextDefaultDay($day, $hour, $min)
 // function to write playlist display/enter form in 
 // html table format
 
-function writePlaylistForm($show_id, $cell="DDDDDD", $nonew="")
-	{
+function writePlaylistForm($show_id, $cell="DDDDDD", $nonew="") {
 	//get the data
-	global $link;
-	$query = "SELECT * FROM playlist WHERE showID = '$show_id' 
-				ORDER BY orderkey";
-	$result = mysql_query($query, $link);
-	if ( ! $result )
-		die( "writePlaylistForm() fatal error: ".mysql_error() );
+	global $dbLink;
+	$query = "SELECT * FROM playlist WHERE showID = ? ORDER BY orderkey"; // TODO replace select * with explicit column list
+    $stmt = $dbLink->prepare($query);
+    $stmt->bind_param('i', $show_id);
+    $stmt->execute() || dieFromSQLError("writePlaylistForm()", $stmt->errno, $stmt->error);
+
+	$result = $stmt->get_result();
 	$played = array();
-	while ($row = mysql_fetch_assoc($result))
+	while ($row = $result->fetch_array()) {
 		array_push($played, $row);
+    }
 	// print the table headers
 	print "<table width=\"100%\" border=\"0\" cellpadding=\"3\" cellspacing=\"2\">\n";
 	print "\t<tr>\n\t\t<td colspan='9' align='right'><font size='-2'>R = request, C = Compilation</font></td>\n\t</tr>\n";
@@ -489,81 +499,58 @@ function writePlaylistForm($show_id, $cell="DDDDDD", $nonew="")
 // function to add line to playlist table in db
 
 function writePlaylistLine($id, $artist, $song, $album, $label,
-						$comments, $emph, $request, $comp)	{
-	global $link;
-	$query = "INSERT INTO playlist (showID, artist, song, album, 
-			label, comments, emph, request, comp)";
-	$query .= "VALUES ('$id', '$artist', '$song', '$album',
-			'$label', '$comments', '$emph', '$request', '$comp')";
-	$result = mysql_query($query, $link);
-	if (! $result)
-		die( "writePlaylistLine() fatal error: ".mysql_error() );
-	$k = mysql_insert_id($link);
-	$query2 = "UPDATE playlist SET orderkey=$k WHERE ID=$k";
-	$result2 = mysql_query($query2, $link);
-	if (! $result2)
-		die("writePlaylistLine() fatal error: failed to assign orderkey\n"
-					.mysql_error());
-	return $k;
+                                $comments, $emph, $request, $comp) {
+    global $dbLink;
+    $query = "INSERT INTO playlist (showID, artist, song, album, label, comments, emph, request, comp)
+              VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+    // prepare the statement
+    $stmt = $dbLink->prepare($query);
+
+    // bind in the variables
+    $is_request = $request ? 1 : 0;
+    $is_comp = $comp ? 1 : 0;
+    $stmt->bind_param('issssssii', $id, $artist, $song, $album, $label, $comments, $emph, $is_request, $is_comp);
+
+    // execute the query
+    $stmt->execute() || die("writePlaylistLine() Error inserting row: ".$stmt->errno.": ".$stmt->error);
+    // get the key
+    $k = $stmt->insert_id;
+    // update the fresh row with the key
+    $stmt = $dbLink->prepare("UPDATE playlist SET orderkey=? WHERE ID=?");
+    $stmt->bind_param('ii', $k, $k);
+    $stmt->execute() || die("writePlaylistLine() Error updating row: ".$stmt->errno.": ".$stmt->error);
+    // return the key
+    return $k;
 }
 
 function writeClassicalPlaylistLine($id, $composer, $song, $ensemble, 
 					$conductor, $performer, $label, $comments, $emph)	{
-	global $link;
-	$query = "INSERT INTO playlist (showID, artist, song, ensemble, conductor,
-			performer, label, comments, emph) ";
-	$query .= "VALUES ('$id', '$composer', '$song', '$ensemble', '$conductor',
-						'$performer', '$label', '$comments', '$emph')";
-	$result = mysql_query($query, $link);
-	if (! $result)
-		die( "writeClassicalPlaylistLine() fatal error: ".mysql_error() );
-	$k = mysql_insert_id($link);
-	$query2 = "UPDATE playlist SET orderkey=$k WHERE ID=$k";
-	$result2 = mysql_query($query2, $link);
-	if (! $result2)
-		die("writeClassicalPlaylistLine() fatal error: failed to assign 
-					orderkey\n" .mysql_error());
+    global $dbLink;
+	$query = "INSERT INTO playlist (showID, artist, song, ensemble, conductor, performer, label, comments, emph)
+	          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    $stmt = $dbLink->prepare($query);
+
+    $stmt->bind_param('issssssss', $id, $composer, $song, $ensemble, $conductor, $performer, $label, $comments, $emph);
+
+    $stmt->execute() || die("writeClassicalPlaylistLine() Error inserting row: ".$stmt->errno.": ".$stmt->error);
+
+	$k = $stmt->insert_id;
+
+    $stmt = $dbLink->prepare("UPDATE playlist SET orderkey=? WHERE ID=?");
+    $stmt->bind_param('ii', $k, $k);
+    $stmt->execute() || die("writeClassicalPlaylistLine() Error updating row: ".$stmt->errno.": ".$stmt->error);
 	return $k;
 }
 
-// function to delete line from playlist table
-
-function deleteLine($line_id)
-	{
-	global $link;
-	$query = "DELETE FROM playlist WHERE ID='$line_id'";
-	$result = mysql_query($query, $link);
-	if ( ! $result )
-		die( "deleteLine() fatal error: ".mysql_error() );
-	return mysql_affected_rows($link);
-	}
-	
-	
-// function to update line in playlist table
-
-function updatePlaylistLine($id, $artist, $song, $album, $label,
-						$comments, $emph, $request, $comp)
-	{
-	global $link;
-	$query = "UPDATE playlist SET artist='$artist', song='$song',
-			album='$album', label='$label', comments='$comments',
-			emph='$emph', request='$request', comp='$comp'";
-	$query .= "WHERE ID=$id";
-	$result = mysql_query($query, $link);
-	if ( ! $result )
-		die( "updatePlaylistLine() fatal error: ".mysql_error() );
-	return mysql_affected_rows($link);
-	}
-	
 // function to update show details
 function updateDetails($showID, $starttime, $dur, $djname, $title, $subt,
 									$genre, $othgenre)	{
-	global $link;
-	$query = "UPDATE shows SET starttime=$starttime, duration=$dur,
-			djname='$djname', title='$title', subtitle='$subt', genre='$genre',
-			othergenre='$othgenre' WHERE ID=$showID";
-	mysql_query($query, $link)
-		or die("updateDetails fatal error: ".mysql_error());
+	global $dbLink;
+	$query = "UPDATE shows SET starttime=?, duration=?, djname=?, title=?, subtitle=?, genre=?, othergenre=? WHERE ID=?";
+    $stmt = $dbLink->prepare($query);
+    $stmt->bind_param('iisssssi', $starttime, $dur, $djname, $title, $subt, $genre, $othgenre, $showID);
+    $stmt->execute() || dieFromSQLError("updateDetails()", $stmt->errno, $stmt->error);
 	return;
 }
 
@@ -667,16 +654,19 @@ function writeShowInfo($id)
 
 // function to write playlist [no form]
 
-function writePlaylist($id, $tblhead="CCCCCC", $tblcolor="DDDDDD", $tbltext="000000")
-	{
-	global $link;
-	$query = "SELECT * FROM playlist WHERE showID = '$id' ORDER BY ID";
-	$result = mysql_query($query, $link);
-	if ( ! $result )
-		die( "writePlaylist() fatal error: ".mysql_error() );
+function writePlaylist($id, $tblhead="CCCCCC", $tblcolor="DDDDDD", $tbltext="000000") {
+	global $dbLink;
+	$query = "SELECT * FROM playlist WHERE showID = ? ORDER BY ID";
+    $stmt = $dbLink->prepare($query);
+    $stmt->bind_param('i', $id);
+    $stmt->execute() || dieFromSQLError("writePlaylist()", $stmt->errno, $stmt->error);
+
+	$result = $stmt->get_result();
+
 	$played = array();
-	while ($row = mysql_fetch_assoc($result))
+	while ($row = $result->fetch_array()) {
 		array_push($played, $row);
+    }
 	// print the table headers
 	print "<table width=\"100%\" border=\"0\" cellpadding=\"3\" cellspacing=\"2\" style=\"color: #$tbltext\">\n";
 	print "\t<tr>\n";
@@ -709,7 +699,7 @@ function writePlaylist($id, $tblhead="CCCCCC", $tblcolor="DDDDDD", $tbltext="000
 		}
 	print "</table>";
 	return $query;
-	}
+}
 
 	
 // function to output the top plays in a specified period of time in a table to the browser
@@ -761,7 +751,7 @@ function cmp($a, $b)	{
 		return strcmp(strtolower($a[1]), strtolower($b[1]));
 }
 
-// function to sort an array without any leading 'they'
+// function to sort an array without any leading 'the'
 function sort_stripThe($row_arr, $sortby)	{
 	$sort_arr = array();
 	foreach($row_arr as $row)	{
@@ -810,6 +800,7 @@ function mailQueryResults($to, $subject, $lastquery, $start=null, $end=null,
 
 
 // function to search database at large
+// TODO find callers, limit searchfield to some constants, escape searchstring
 function searchDatabase($searchstring, $searchfield, $start, $end, $users, $genres, $emphs, $comp, $req, $fuzzy, $page)	{
 	global $link;
 	// section to return list of shows by that dj if 'username' searchfield is chosen
@@ -909,15 +900,17 @@ function printSearchResults($results)	{
 }
 
 // function to generate a list of playlists for a particular user
-function writeListOfPlaylists($id, $target='editplaylist.php?')
-	{
-	global $link, $session;
-	$query = "SELECT * FROM shows WHERE userID=$id ORDER BY starttime DESC";
-	$result = mysql_query($query, $link);
-	if ( ! $result )
-		die ( "writeListOfPlaylists() fatal error: ".mysql_error() );
+function writeListOfPlaylists($id, $target='editplaylist.php?') {
+	global $dbLink, $session;
+	$query = "SELECT * FROM shows WHERE userID=? ORDER BY starttime DESC";
+    $stmt = $dbLink->prepare($query);
+    $stmt->bind_param('i', $id);
+    $stmt->execute() || dieFromSQLError("writeListOfPlaylists()", $stmt->errno, $stmt->error);
+
+	$result = $stmt->get_result();
+
 	$shows = array();
-	while ( $rows = mysql_fetch_assoc($result))
+	while ( $rows = $result->fetch_array())
 		array_push( $shows, $rows );
 	print "<table>\n";
 	foreach ($shows as $row)
@@ -937,17 +930,25 @@ function writeListOfPlaylists($id, $target='editplaylist.php?')
 		print "\t</tr>\n";
 		}
 	print "</table>\n";
-	}
+}
 	
 function deletePlaylist($id)	{
-	global $link;
-	$query1 = "DELETE FROM playlist WHERE playlist.showID=$id";
-	$result1 = mysql_query($query1, $link);
-	$query2 = "DELETE FROM shows WHERE ID=$id";
-	$result2 = mysql_query($query2, $link);
-	if (! $result1 || ! $result2) 
-		die("deletePlaylist() fatal error: ".mysql_error());
+    global $dbLink;
+	$query1 = "DELETE FROM playlist WHERE playlist.showID=?";
+    $stmt = $dbLink->prepare($query1);
+    $stmt->bind_param('i', $id);
+    $stmt->execute() || dieFromSQLError("deletePlayList()", $stmt->errno, $stmt->error);
+
+	$query2 = "DELETE FROM shows WHERE ID=?";
+    $stmt = $dbLink->prepare($query2);
+    $stmt->bind_param('i', $id);
+    $stmt->execute() || dieFromSQLError("deletePlayList()", $stmt->errno, $stmt->error);
+
 	return;
+}
+
+function dieFromSQLError($functionName, $errno, $errorMessage) {
+    die($functionName." fatal error: ".$errno." ".$errorMessage);
 }
 
 function is_url($url)	{

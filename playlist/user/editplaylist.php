@@ -48,7 +48,7 @@ if ( isset($submitLine) || (isset($def_action) && $def_action == "newline" &&
 		$message .= "You must fill in an album title. For albums with no title type \"s/t\".<br>\n";
 	if ($message == "")	{ // no errors
 		if ( $showrow[genre] != "Classical" )
-			writePlaylistLine($show_id, $_POST[artist], $_POST[song],
+            writePlaylistLine($show_id, $_POST[artist], $_POST[song],
 						$_POST[album], $_POST[label], $_POST[comments],
 						$_POST[emph], $_POST[request], $_POST[comp]);
 		else
@@ -60,7 +60,7 @@ if ( isset($submitLine) || (isset($def_action) && $def_action == "newline" &&
 
 // write a set break line
 if ( isset($break))
-	writePlaylistLine($show_id, "*****", "BREAK", "*****", 
+	writePlaylistLine($show_id, "*****", "BREAK", "*****",
 									null,$_POST[comments],null,null,null);
 
 // manipulate line
