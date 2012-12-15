@@ -92,25 +92,32 @@ function getPrevRow( $table, $fnm, $fval, $fnm2=null, $fval2=null, $typestr ) {
 	return $result->fetch_array();
 }
 
-function getNextRow( $table, $fnm, $fval, $fnm2=null, $fval2=null )
-	{
-	global $link;
+function getNextRow( $table, $fnm, $fval, $fnm2=null, $fval2=null, $typestr ) {
+    global $dbLink;
 	// first get the ID of the next row
-	$query0 = "SELECT MIN($fnm) FROM $table WHERE $fnm > $fval";
-	if ($fnm2 && $fval2)
-		$query0 .= " AND $fnm2 = $fval2";
-	$result0 = mysql_query($query0, $link);
-	if (! $result0)
-		die( "getPrevRow() result0 fatal error: ".mysql_error() );
-	$next_array = mysql_fetch_array( $result0 );
+	$query0 = "SELECT MIN($fnm) FROM $table WHERE $fnm > ?";
+    $secondCriterion = $fnm2 && $fval2;
+	if ($secondCriterion) {
+		$query0 .= " AND $fnm2 = ?";
+    }
+    $stmt = $dbLink->prepare($query0);
+    if ($secondCriterion){
+        $stmt->bind_param($typestr, $fval, $fval2);
+    } else {
+        $stmt->bind_param($typestr, $fval);
+    }
+    $stmt->execute() || dieFromSQLError("getNextRow() ".$query0, $stmt->errno, $stmt->error);
+	$result0 = $stmt->get_result();
+	$next_array = $result0->fetch_array();
 	$next_id = $next_array[0];
 	// now get all values from that row
-	$query = "SELECT * FROM $table WHERE $fnm = '$next_id'";
-	$result = mysql_query( $query, $link );
-	if ( ! $result )
-		die( "getPrevRow() fatal error: ".mysql_error() );
-	return mysql_fetch_array( $result );
-	}
+	$query = "SELECT * FROM $table WHERE $fnm = ?"; // TODO this assumes that $fnm is numeric. I think this function is too generic for code clarity and maintainability.
+    $stmt = $dbLink->prepare($query);
+    $stmt->bind_param('i', $next_id);
+    $stmt->execute() || dieFromSQLError("getNextRow() ".$query, $stmt->errno, $stmt->error);
+    $result = $stmt->get_result();
+	return $result->fetch_array();
+}
 	
 	
 // function to convert string output to html
@@ -360,36 +367,32 @@ function setShowDetails($id=null)
 // function to send new show details to db
 
 function newShow($users_id, $starttime, $duration, $djname, $title,
-				$subtitle, $genre, $othergenre)
-	{
-	global $link;
+				$subtitle, $genre, $othergenre) {
+	global $dbLink;
 	if (empty($othergenre))
 		$othergenre = $genre;
-	if (empty($djname))
-		{
-		$query = "SELECT firstname FROM users WHERE loginsID=$users_id";
-		$result = mysql_query($query, $link);
-		if ( ! $result )
-			die( "newShow() fatal error: ".mysql_error() );
-		$array = mysql_fetch_row($result);
+	if (empty($djname)) {
+		$query = "SELECT firstname FROM users WHERE loginsID=?";
+        $stmt = $dbLink->prepare($query);
+        $stmt->bind_param('i', $$users_id);
+        $stmt->execute() || dieFromSQLError("newShow()", $stmt->errno, $stmt->error);
+        $result = $stmt->get_result();
+		$array = $result->fetch_array();
 		$djname = $array[0];
-		}
-	$query = "INSERT INTO shows (userID, starttime, duration,
-			djname, title, subtitle, genre, othergenre)";
-	$query .= "VALUES ('$users_id', $starttime, $duration,
-			'$djname', '$title', '$subtitle', '$genre', '$othergenre')";
-	$result = mysql_query($query, $link);
-	if ( ! $result )
-		die ("newShow() fatal error: ".mysql_error() );
-	return mysql_insert_id($link);
 	}
+	$query = "INSERT INTO shows (userID, starttime, duration, djname, title, subtitle, genre, othergenre)";
+	$query .= "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+    $stmt = $dbLink->prepare($query);
+    $stmt->bind_param('iiisssss', $users_id, $starttime, $duration, $djname, $title, $subtitle, $genre, $othergenre);
+    $stmt->execute() || dieFromSQLError("newShow()", $stmt->errno, $stmt->error);
+	return $stmt->insert_id;
+}
 
 
 // function to start new show with default settings
 
-function defaultShow($id)
-	{
-	global $link;
+function defaultShow($id) {
+	global $dbLink;
 	$defaults = getRow("users", "loginsID", $id, 'i');
 	if (empty($defaults[othergenre]))
 		$defaults[othergenre] = $defaults[genre];
@@ -401,17 +404,15 @@ function defaultShow($id)
 	if (! $starttime = nextDefaultDay($defaults[defday], $defaults[defhour], $defaults[defmin]))	{
 		return false;
 	}
-	$query = "INSERT INTO shows (userID, starttime, duration,
-			djname, title, subtitle, genre, othergenre)";
-	$query .= "VALUES ('$defaults[ID]', '$starttime',
-				'$defaults[defduration]', '$defaults[defdjname]',
-				'$defaults[deftitle]', '$defaults[defsubtitle]',
-				'$defaults[defgenre]', '$defaults[defothergenre]')";
-	$result = mysql_query($query, $link);
-	if (! $result)
-		die( "defaultShow() fatal error: ".mysql_error() );
-	return mysql_insert_id($link);
-	}
+	$query = "INSERT INTO shows (userID, starttime, duration, djname, title, subtitle, genre, othergenre) ";
+	$query .= "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+    $stmt = $dbLink->prepare($query);
+    $stmt->bind_param('iiisssss', $defaults[ID], $starttime, $defaults[defduration], $defaults[defdjname],
+        $defaults[deftitle], $defaults[defsubtitle], $defaults[defgenre], $defaults[defothergenre]);
+    $stmt->execute() || dieFromSQLError("defaultShow()", $stmt->errno, $stmt->error);
+
+	return $stmt->insert_id;
+}
 
 
 // function to find the next default day and insert it into
@@ -567,9 +568,8 @@ function updateDetails($showID, $starttime, $dur, $djname, $title, $subt,
 }
 
 // function to move a playlist entry up one row
-function shiftUp($id)
-	{
-	global $link;
+function shiftUp($id) {
+	global $dbLink;
 	$row = getRow("playlist", "ID", $id, 'i');
 	$prev_row = getPrevRow("playlist", "ID", $id, "showID", $row[showID], 'ii');
 	// check if there even _is_ a previous row
@@ -577,68 +577,50 @@ function shiftUp($id)
 		$message = "Already at the top<br>\n";
 		return $message;
 	}
-	foreach ($row as $key=>$val)
-		$row[$key] = addslashes($val);
-	foreach ($prev_row as $key=>$val)
-		$prev_row[$key] = addslashes($val);	
-	$query1 = "UPDATE playlist SET artist=\"$prev_row[artist]\",
-			song=\"$prev_row[song]\", album=\"$prev_row[album]\",
-			label=\"$prev_row[label]\", comments=\"$prev_row[comments]\",
-			emph=\"$prev_row[emph]\", request=\"$prev_row[request]\",
-			comp=\"$prev_row[comp]\" WHERE ID=\"$id\"";
-	$result1 = mysql_query( $query1, $link );
-	if (! $result1)
-		die( "shiftUp() [result1] fatal error: ".mysql_error() );
-	$query2 = "UPDATE playlist SET artist=\"$row[artist]\",
-			song=\"$row[song]\", album=\"$row[album]\",
-			label=\"$row[label]\", comments=\"$row[comments]\",
-			emph=\"$row[emph]\", request=\"$row[request]\",
-			comp=\"$row[comp]\" WHERE ID=\"$prev_row[ID]\"";
-	$result2 = mysql_query( $query2, $link);
-	if (! $result2)
-		die( "shiftUp() [result2] fatal error: ".mysql_error() );
-	}
+	$query1 = "UPDATE playlist SET artist=?, song=?, album=?, label=?, comments=?, emph=?, request=?, comp=? WHERE ID=?";
+    $stmt = $dbLink->prepare($query1);
+    $stmt->bind_param('ssssssiii', $prev_row[artist], $prev_row[song], $prev_row[album], $prev_row[label], $prev_row[comments],
+        $prev_row[emph], $prev_row[request], $prev_row[comp], $id);
+    $stmt->execute() || dieFromSQLError("shiftUp() first update", $stmt->errno, $stmt->error);
+
+	$query2 = "UPDATE playlist SET artist=?, song=?, album=?, label=?, comments=?, emph=?, request=?, comp=? WHERE ID=?";
+    $stmt = $dbLink->prepare($query2);
+    $stmt->bind_param('ssssssiii', $row[artist], $row[song], $row[album], $row[label], $row[comments], $row[emph],
+        $row[request], $row[comp], $prev_row[ID]);
+    $stmt->execute() || dieFromSQLError("shiftUp() second update", $stmt->errno, $stmt->error);
+    return "";
+}
 	
 // function to move playlist entry down one row
 
-function shiftDown($id)
-	{
-	global $link;
+function shiftDown($id) {
+	global $dbLink;
 	$row = getRow("playlist", "ID", $id, 'i');
-	$next_row = getNextRow("playlist", "ID", $id, "showID", $row[showID]);
+	$next_row = getNextRow("playlist", "ID", $id, "showID", $row[showID], 'ii');
 	// check if there even _is_ a next row
 	if ( empty($next_row) )	{
 		$message = "Already at the bottom<br>\n";
 		return $message;
 	}
-	foreach ($row as $key=>$val)
-		$row[$key] = addslashes($val);	
-	foreach ($next_row as $key=>$val)
-		$next_row[$key] = addslashes($val);	
-	$query1 = "UPDATE playlist SET artist=\"$next_row[artist]\",
-			song=\"$next_row[song]\", album=\"$next_row[album]\",
-			label=\"$next_row[label]\", comments=\"$next_row[comments]\",
-			emph=\"$next_row[emph]\", request=\"$next_row[request]\",
-			comp=\"$next_row[comp]\" WHERE ID=\"$id\"";
-	$result1 = mysql_query( $query1, $link);
-	if (! $result1)
-		die( "shiftDown() [result1] fatal error: ".mysql_error() );
-	$query2 = "UPDATE playlist SET artist=\"$row[artist]\",
-			song=\"$row[song]\", album=\"$row[album]\",
-			label=\"$row[label]\", comments=\"$row[comments]\",
-			emph=\"$row[emph]\", request=\"$row[request]\",
-			comp=\"$row[comp]\" WHERE ID=\"$next_row[ID]\"";
-	$result2 = mysql_query( $query2, $link);
-	if (! $result2)
-		die( "shiftDown() [result2] fatal error: ".mysql_error() );
-	}
+    $query1 = "UPDATE playlist SET artist=?, song=?, album=?, label=?, comments=?, emph=?, request=?, comp=? WHERE ID=?";
+    $stmt = $dbLink->prepare($query1);
+    $stmt->bind_param('ssssssiii', $next_row[artist], $next_row[song], $next_row[album], $next_row[label], $next_row[comments],
+        $next_row[emph], $next_row[request], $next_row[comp], $id);
+    $stmt->execute() || dieFromSQLError("shiftDown() first update", $stmt->errno, $stmt->error);
+
+    $query2 = "UPDATE playlist SET artist=?, song=?, album=?, label=?, comments=?, emph=?, request=?, comp=? WHERE ID=?";
+    $stmt = $dbLink->prepare($query2);
+    $stmt->bind_param('ssssssiii', $row[artist], $row[song], $row[album], $row[label], $row[comments], $row[emph],
+        $row[request], $row[comp], $next_row[ID]);
+    $stmt->execute() || dieFromSQLError("shiftDown() second update", $stmt->errno, $stmt->error);
+    return "";
+}
 
 
 // function to write show information
 
 function writeShowInfo($id)
 	{
-	global $link;
 	global $session;
 	// first get the info from the database
 	$showinfo = getRow("shows", "ID", $id, 'i');
@@ -713,24 +695,39 @@ function writePlaylist($id, $tblhead="CCCCCC", $tblcolor="DDDDDD", $tbltext="000
 	return $query;
 }
 
-	
+
 // function to output the top plays in a specified period of time in a table to the browser
 function printTopPlays($starttime, $endtime, $genre, $emph, $sortby="artist")	{
-	global $link;
+	global $dbLink;
 	$query = "SELECT artist, song, label, album, emph, comp, starttime, duration, djname ";
 	$query .= "FROM playlist, shows WHERE playlist.showID = shows.ID";
-	$query .= " AND shows.starttime >= '$starttime' AND shows.starttime <= '$endtime'";
-	if ($genre != 'any')
-		$query .= " AND genre = '$genre' ";
-	if ( ! empty($emph) )
+	$query .= " AND shows.starttime >= ? AND shows.starttime <= ?";
+    /*
+     * There must be a PHP idiom that will let us pass in an array that contains all
+     * the variables for binding, so that the call looks like $stmt->bind_param($typestring, $paramarray).
+     */
+    $withGenre = 0;
+	if ($genre != 'any') {
+		$query .= " AND genre = ? ";
+        $withGenre = 1;
+    }
+	if ( ! empty($emph) ) {
 		($emph=='new') ? $query .= " AND (emph='NE' or emph='N')": $query .= " AND emph='OE'";
+    }
 	$query .= " ORDER BY artist";
-	$result = mysql_query($query, $link);
-	if (! $result)
-		die("printTopPlays() fatal error: ".mysql_error());
+    $stmt = $dbLink->prepare($query);
+    if ($withGenre) {
+        $stmt->bind_param('iis', $starttime, $endtime, $genre);
+    } else {
+        $stmt->bind_param('ii', $starttime, $endtime);
+    }
+	$stmt->execute() || dieFromSQLError("printTopPlays()", $stmt->errno, $stmt->error);
+    $result = $stmt->get_result();
+
 	$plays = array();
-	while ($row = mysql_fetch_assoc($result))
+	while ($row = $result->fetch_array()) {
 		array_push($plays, $row);
+    }
 	$plays = sort_stripThe($plays, $sortby);
 	// print the table headers
 	
@@ -778,10 +775,15 @@ function sort_stripThe($row_arr, $sortby)	{
 	return $ret_arr;
 }
 
+/*
+ * This should be rewritten to use mysqli, but it should probably be more deeply refactored. There are currently
+ * two places in the code that call this function, which suggests that really what we want is a function that
+ * accepts an address, a subject, a message body, and an array of associative arrays (the rows to be embedded
+ * in the message). That way the callers would be responsible for executing the proper query and processing the
+ * results and the mailer function could be responsible just for assembling the message and sending it out. - SWB 20121215
+ */
 // function to send a comma-delimited list of the top plays to specified email address
-function mailQueryResults($to, $subject, $lastquery, $start=null, $end=null,
-		$genre='', $from=null,
-		$comments=false)	{
+function mailQueryResults($to, $subject, $lastquery, $start=null, $end=null, $genre='', $from=null, $comments=false) {
 	global $link;
 	$lastquery = stripcslashes($lastquery);
 	$result = mysql_query($lastquery, $link);
